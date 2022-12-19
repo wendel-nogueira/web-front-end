@@ -15,7 +15,7 @@ export function AppRoutes() {
             <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/games" element={<Games />} />
-                <Route path="/reviews" element={<Reviews />} />
+                <Route path="/review/:id" element={<Reviews />} />
                 <Route path="/login" element={<Login />} />
             </Routes>
         </Router>
