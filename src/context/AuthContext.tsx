@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }: any) => {
     const [loading, setLoading] = useState(true);
     const cookies = new Cookies();
 
-    /*useEffect(() => {
+    useEffect(() => {
         const user = cookies.get('user');
 
         if (user) {
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }: any) => {
         }
 
         setLoading(false);
-    }, []);*/
+    }, []);
 
     const signIn = async (email: string, password: string) => {
         const response = await fetch('https://web-back-end-five.vercel.app/login', {
