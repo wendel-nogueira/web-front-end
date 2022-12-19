@@ -1,9 +1,16 @@
-import { AppRoutes } from "./Routes"
+import { AppRoutes } from './Routes';
+import { GlobalStyle } from './styles/global';
+import { AuthProvider } from './context/AuthContext';
 
 
 function App() {
   return (
-    <AppRoutes />
+    <>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+      <GlobalStyle />
+    </>
   )
 }
 
