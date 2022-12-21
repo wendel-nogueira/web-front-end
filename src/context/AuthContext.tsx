@@ -21,10 +21,6 @@ export const AuthProvider = ({ children }: any) => {
 
         if (user) {
             setUser(user);
-
-            if (window.location.pathname === '/login') {
-                window.location.href = '/';
-            }
         }
 
         setLoading(false);
@@ -55,6 +51,8 @@ export const AuthProvider = ({ children }: any) => {
     const signOut = () => {
         setUser(null);
         cookies.remove('user');
+
+        window.location.href = '/login';
     };
 
     return (

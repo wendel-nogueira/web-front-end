@@ -4,6 +4,7 @@ import { Footer } from '../components/footer/Footer';
 import { Box, Button, TextField, Divider } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/UseAuth';
+import { Cookies } from 'react-cookie';
 
 
 const styleInput = {
@@ -30,7 +31,12 @@ const styleInput = {
 };
 
 export function Reviews() {
-    const [userProfile, setUserProfile] = useState({});
+    const [userProfile, setUserProfile] = useState({
+        email: '',
+        name: '',
+        sub: '',
+        username: '',
+    });
     const [game, setGame] = useState({
         title: '',
         summary: '',
@@ -40,7 +46,10 @@ export function Reviews() {
         price: '',
         rating: '',
     });
-    const { user } = useAuth();
+
+    const { user, signOut } = useAuth();
+    const cookies = new Cookies();
+
 
     useEffect(() => {
         const id = window.location.pathname.replace('/review/', '');
@@ -70,12 +79,14 @@ export function Reviews() {
     }, []);
 
     useEffect(() => {
-        if (user) {
+        const userInfo = cookies.get('user');
+
+        if (userInfo) {
             fetch('https://web-back-end-five.vercel.app/me', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${user}`,
+                    'Authorization': `Bearer ${userInfo}`,
                 },
             }).then((response) => {
                 if (response.ok) {
@@ -86,12 +97,69 @@ export function Reviews() {
             }).then((data) => {
                 setUserProfile(data);
             }).catch((error) => {
+                signOut();
                 console.log(error);
-
-                window.location.href = '/login';
             });
+        } else {
+            window.location.href = '/login';
         }
-    }, [user]);
+    }, []);
+
+    const [review, setReview] = useState({
+        title: '',
+        description: '',
+        rating: 0,
+    });
+
+    function handleReview() {
+        const id = window.location.pathname.replace('/review/', '');
+
+        if (review.title === '' || review.description === '' || review.rating === 0) {
+            alert('Preencha todos os campos');
+            return;
+        }
+
+        if (typeof review.rating !== 'number') {
+            alert('A nota deve ser um número');
+            return;
+        }
+
+        if (review.rating < 1 || review.rating > 5) {
+            alert('A nota deve ser entre 1 e 5');
+            return;
+        }
+
+        const reviewData = {
+            title: review.title,
+            review: review.description,
+            rating: review.rating,
+            userId: userProfile.sub,
+        }
+
+        //fetch(`https://web-back-end-five.vercel.app/games/${id}/reviews`, {
+        fetch(`http://localhost:3000/games/${id}/reviews`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user}`,
+            },
+            body: JSON.stringify(reviewData),
+        }).then((response) => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Something went wrong');
+            }
+        }).then((data) => {
+            console.log(data);
+            alert('Avaliação enviada com sucesso');
+            window.location.href = '/';
+        }).catch((error) => {
+            alert('Ocorreu um erro ao enviar a avaliação');
+            console.log(error);
+        });
+    }
+
 
     return (
         <>
@@ -197,11 +265,23 @@ export function Reviews() {
                         rowGap: '8px',
                         margin: 'auto',
                     }}>
-                        <TextField id="outlined-multiline-static" label="Título" multiline variant="outlined" type="text" size='small' sx={styleInput} />
+                        <TextField id="outlined-multiline-static-1" label="Título" multiline variant="outlined" type="text" size='small' sx={styleInput} value={review.title} onChange={(e) => setReview({ ...review, title: e.target.value })} />
 
-                        <TextField id="outlined-multiline-static" label="Avaliação" multiline variant="outlined" type="text" size='small' sx={styleInput} />
+                        <TextField id="outlined-multiline-static-2" label="Avaliação" multiline variant="outlined" type="text" size='small' sx={styleInput} value={review.description} onChange={(e) => setReview({ ...review, description: e.target.value })} />
 
-                        <TextField id="outlined-multiline-static" label="Nota" multiline variant="outlined" type="number" size='small' sx={styleInput} />
+                        <TextField
+                            id="standard-number"
+                            label="Nota"
+                            type="number"
+                            InputLabelProps={{
+                                shrink: true,
+                            }}
+                            variant="outlined"
+                            size="small"
+                            sx={styleInput}
+                            value={review.rating}
+                            onChange={(e) => setReview({ ...review, rating: parseInt(e.target.value) })}
+                        />
 
                         <Button variant="contained" sx={{
                             width: '100%',
@@ -211,7 +291,7 @@ export function Reviews() {
                             '&:hover': {
                                 backgroundColor: '#885FFF',
                             },
-                        }}>Enviar</Button>
+                        }} onClick={handleReview}>Enviar</Button>
                     </Box>
                 </Box>
             </Main>
