@@ -197,8 +197,6 @@ export const Header = () => {
                 </MenuItem>*/}
                 <MenuItem onClick={() => {
                     signOut();
-
-                    window.location.reload();
                 }}>
                     <ListItemIcon>
                         <Logout fontSize="small" color="error" />
